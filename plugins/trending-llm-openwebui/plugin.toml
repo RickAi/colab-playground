@@ -1,0 +1,175 @@
+api = 1
+id = "trending-llm-openwebui"
+version = "0.1.0"
+needs = ["hf_token"]
+
+[name]
+en = "Trending LLMs (Open WebUI)"
+zh-CN = "热门大模型一键体验 · Open WebUI"
+zh-TW = "熱門大模型一鍵體驗 · Open WebUI"
+ja = "人気 LLM ワンクリック体験 (Open WebUI)"
+ko = "인기 LLM 원클릭 체험 (Open WebUI)"
+
+[description]
+en = "One-click Open WebUI + llama.cpp for the hottest open-source models: Qwen3.8-27B, Gemma 4 (26B-A4B / 31B Multimodal Vision), DeepSeek-V4.1-Flash, Qwen3-Coder-Next, and GLM-4.7-Flash. Auto-picks the best quantisation and mmproj for your GPU."
+zh-CN = "一键体验当前最火开源大模型 + Open WebUI 对话界面：内置 Qwen3.8-27B、Google Gemma 4 多模态看图对话（26B-A4B / 31B）、DeepSeek-V4.1-Flash、Qwen3-Coder-Next 与 GLM-4.7-Flash，根据显存自动选最佳量化版本并自动挂载视觉模块。"
+zh-TW = "一鍵體驗目前最熱門開源大模型 + Open WebUI 對話介面：內建 Qwen3.8-27B、Google Gemma 4 多模態看圖對話（26B-A4B / 31B）、DeepSeek-V4.1-Flash、Qwen3-Coder-Next 與 GLM-4.7-Flash，依顯存自動挑選最佳量化版本並自動掛載視覺模組。"
+
+[provision]
+accelerator = "L4"
+min_vram_mib = 0
+high_mem = false
+
+[[inputs]]
+id = "preset"
+type = "select"
+options = [
+  "Qwen3.8-27B",
+  "Gemma-4-26B-A4B-Multimodal",
+  "Gemma-4-31B-Multimodal",
+  "DeepSeek-V4.1-Flash",
+  "Qwen3-Coder-Next",
+  "GLM-4.7-Flash",
+]
+default = "Qwen3.8-27B"
+[inputs.label]
+en = "Model preset"
+zh-CN = "选择热门模型"
+zh-TW = "選擇熱門模型"
+[inputs.help]
+en = "L4 (24 GB) runs Qwen3.8-27B, Gemma-4-26B-A4B (vision) and GLM-4.7-Flash smoothly. A100/G4 is recommended for DeepSeek-V4.1-Flash, Qwen3-Coder-Next or Gemma-4-31B."
+zh-CN = "L4 (24GB, 1.54 CU/h) 即可流畅运行 Qwen3.8-27B、Gemma-4-26B-A4B（支持传图对话）与 GLM-4.7-Flash；DeepSeek-V4.1-Flash / Qwen3-Coder-Next / Gemma-4-31B 推荐选 A100 或 G4。"
+zh-TW = "L4 (24GB) 即可流暢運行 Qwen3.8-27B、Gemma-4-26B-A4B（支援看圖對話）與 GLM-4.7-Flash；DeepSeek-V4.1-Flash / Qwen3-Coder-Next / Gemma-4-31B 建議選 A100 或 G4。"
+
+[[inputs]]
+id = "custom_repo"
+type = "text"
+[inputs.label]
+en = "Custom GGUF repo override (optional)"
+zh-CN = "自定义 Hugging Face GGUF 仓库（可选）"
+zh-TW = "自訂 Hugging Face GGUF 儲存庫（選填）"
+[inputs.help]
+en = "Leave empty to use the selected preset above, or enter any owner/repo with GGUF files (e.g. unsloth/GLM-5-GGUF)."
+zh-CN = "留空则使用上方选中的热门模型；也可填任意含 GGUF 的仓库（如 unsloth/GLM-5-GGUF）。"
+zh-TW = "留空則使用上方選中的熱門模型；也可填任意含 GGUF 的儲存庫（如 unsloth/GLM-5-GGUF）。"
+
+[[inputs]]
+id = "quant"
+type = "select"
+options = ["auto", "Q8_0", "Q6_K", "Q5_K_M", "Q4_K_M", "UD-Q4_K_XL", "IQ4_XS", "Q3_K_M", "IQ3_S", "UD-IQ2_XXS"]
+default = "auto"
+[inputs.label]
+en = "Quantisation"
+zh-CN = "量化版本"
+zh-TW = "量化版本"
+[inputs.help]
+en = "auto picks the highest-quality quantisation that fits your GPU VRAM."
+zh-CN = "auto 会自动选择当前 GPU 显存放得下的最高质量量化版本。"
+zh-TW = "auto 會自動選擇目前 GPU 顯存放得下的最高品質量化版本。"
+
+[[inputs]]
+id = "ctx_size"
+type = "number"
+default = 16384
+min = 4096
+max = 131072
+[inputs.label]
+en = "Context length"
+zh-CN = "上下文长度"
+zh-TW = "上下文長度"
+
+[[inputs]]
+id = "admin_email"
+type = "text"
+default = "rick@example.com"
+[inputs.label]
+en = "Open WebUI login email"
+zh-CN = "Open WebUI 登录邮箱"
+zh-TW = "Open WebUI 登入信箱"
+
+[[inputs]]
+id = "admin_password"
+type = "secret"
+[inputs.label]
+en = "Open WebUI password (optional)"
+zh-CN = "Open WebUI 登录密码（可选）"
+zh-TW = "Open WebUI 登入密碼（選填）"
+[inputs.help]
+en = "Leave empty to auto-generate a password (shown in run outputs)."
+zh-CN = "留空将自动生成随机密码（就绪后显示在运行输出中）。"
+zh-TW = "留空將自動產生隨機密碼（就緒後顯示在執行輸出中）。"
+
+[[inputs]]
+id = "webui_port"
+type = "number"
+default = 8081
+min = 1024
+max = 65535
+[inputs.label]
+en = "Open WebUI port on the VM"
+zh-CN = "VM 上的 Open WebUI 端口"
+zh-TW = "VM 上的 Open WebUI 連接埠"
+
+[[inputs]]
+id = "api_port"
+type = "number"
+default = 8000
+min = 1024
+max = 65535
+[inputs.label]
+en = "llama.cpp API port on the VM"
+zh-CN = "VM 上的 llama.cpp API 端口"
+zh-TW = "VM 上的 llama.cpp API 連接埠"
+
+[run]
+script = "worker.py"
+
+[[stages]]
+id = "setup"
+[stages.label]
+en = "Install llama.cpp & Open WebUI"
+zh-CN = "安装 llama.cpp 与 Open WebUI"
+zh-TW = "安裝 llama.cpp 與 Open WebUI"
+
+[[stages]]
+id = "plan"
+[stages.label]
+en = "Select best quantisation for GPU"
+zh-CN = "匹配 GPU 最佳量化版本"
+zh-TW = "配對 GPU 最佳量化版本"
+
+[[stages]]
+id = "download"
+[stages.label]
+en = "Download GGUF weights"
+zh-CN = "下载模型权重"
+zh-TW = "下載模型權重"
+
+[[stages]]
+id = "server"
+[stages.label]
+en = "Start llama-server & Open WebUI"
+zh-CN = "启动 llama-server 与 Open WebUI"
+zh-TW = "啟動 llama-server 與 Open WebUI"
+
+[[endpoints]]
+id = "webui"
+port_input = "webui_port"
+path = "/"
+health = "/health"
+kind = "http"
+[endpoints.label]
+en = "Open WebUI Chat"
+zh-CN = "Open WebUI 对话界面"
+zh-TW = "Open WebUI 對話介面"
+
+[[endpoints]]
+id = "api"
+port_input = "api_port"
+path = "/v1"
+health = "/health"
+kind = "openai"
+[endpoints.label]
+en = "OpenAI-compatible API"
+zh-CN = "OpenAI 兼容 API"
+zh-TW = "OpenAI 相容 API"

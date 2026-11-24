@@ -726,6 +726,14 @@ pub fn bundled() -> Vec<(&'static str, &'static [u8])> {
             include_str!("../../../plugins/comfyui-qwen-h3/plugin.toml"),
             include_bytes!("../../../plugins/comfyui-qwen-h3/worker.py"),
         ),
+        (
+            include_str!("../../../plugins/trending-llm-openwebui/plugin.toml"),
+            include_bytes!("../../../plugins/trending-llm-openwebui/worker.py"),
+        ),
+        (
+            include_str!("../../../plugins/qwen3-tts-studio/plugin.toml"),
+            include_bytes!("../../../plugins/qwen3-tts-studio/worker.py"),
+        ),
     ]
 }
 
@@ -1215,6 +1223,20 @@ script = "main.py"
         assert_eq!(comfy.manifest.endpoints.len(), 1);
         assert_eq!(comfy.manifest.endpoints[0].id, "webui");
         assert!(!comfy.script.is_empty());
+
+        let trending = store
+            .get("trending-llm-openwebui")
+            .expect("trending-llm-openwebui bundled");
+        assert_eq!(trending.source, PluginSource::Bundled);
+        assert_eq!(trending.manifest.endpoints.len(), 2);
+        assert!(!trending.script.is_empty());
+
+        let tts = store
+            .get("qwen3-tts-studio")
+            .expect("qwen3-tts-studio bundled");
+        assert_eq!(tts.source, PluginSource::Bundled);
+        assert_eq!(tts.manifest.endpoints.len(), 1);
+        assert!(!tts.script.is_empty());
     }
 
     #[test]

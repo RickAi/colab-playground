@@ -1,0 +1,74 @@
+api = 1
+id = "qwen3-tts-studio"
+version = "0.1.0"
+needs = ["hf_token"]
+
+[name]
+en = "Qwen3-TTS Voice Studio"
+zh-CN = "Qwen3-TTS 语音克隆与配音"
+zh-TW = "Qwen3-TTS 語音克隆與配音"
+ja = "Qwen3-TTS 音声スタジオ"
+ko = "Qwen3-TTS 보이스 스튜디오"
+
+[description]
+en = "One-click Gradio WebUI for Alibaba's Qwen3-TTS 1.7B (10 languages + Chinese dialects): CustomVoice (9 speakers + emotion instructions), VoiceDesign (create voices from text), or VoiceClone (3-second zero-shot voice cloning). Runs fast on L4."
+zh-CN = "一键启动阿里 Qwen3-TTS 1.7B 官方网页工作台（支持中/英/日/韩等 10 种语言及中文方言）：支持 CustomVoice（9 种高质音色 + 自然语言情绪指令）、VoiceDesign（纯文字捏音色）与 VoiceClone（3 秒参考音频零样本克隆）。L4 即可流畅运行。"
+zh-TW = "一鍵啟動阿里 Qwen3-TTS 1.7B 官方網頁工作台（支援中/英/日/韓等 10 種語言及中文方言）：支援 CustomVoice（9 種高質音色 + 自然語言情緒指令）、VoiceDesign（純文字捏音色）與 VoiceClone（3 秒參考音訊零樣本克隆）。L4 即可流暢運行。"
+
+[provision]
+accelerator = "L4"
+min_vram_mib = 0
+high_mem = false
+
+[[inputs]]
+id = "mode"
+type = "select"
+options = ["CustomVoice-1.7B", "VoiceClone-1.7B", "VoiceDesign-1.7B"]
+default = "CustomVoice-1.7B"
+[inputs.label]
+en = "Qwen3-TTS model mode"
+zh-CN = "选择语音模式"
+zh-TW = "選擇語音模式"
+[inputs.help]
+en = "CustomVoice: preset speakers + style instructions; VoiceClone: 3s reference audio cloning (Base); VoiceDesign: describe any voice in text."
+zh-CN = "CustomVoice：预置音色+语气情绪控制；VoiceClone：上传参考音频零样本克隆（Base 模型）；VoiceDesign：用文字描述创造新音色。"
+zh-TW = "CustomVoice：預置音色+語氣情緒控制；VoiceClone：上傳參考音訊零樣本克隆（Base 模型）；VoiceDesign：用文字描述創造新音色。"
+
+[[inputs]]
+id = "port"
+type = "number"
+default = 7860
+min = 1024
+max = 65535
+[inputs.label]
+en = "WebUI port on the VM"
+zh-CN = "VM 上的 WebUI 端口"
+zh-TW = "VM 上的 WebUI 連接埠"
+
+[run]
+script = "worker.py"
+
+[[stages]]
+id = "install"
+[stages.label]
+en = "Install qwen-tts & dependencies"
+zh-CN = "安装 qwen-tts 引擎"
+zh-TW = "安裝 qwen-tts 引擎"
+
+[[stages]]
+id = "server"
+[stages.label]
+en = "Load model & start Gradio WebUI"
+zh-CN = "加载模型并启动语音工作台"
+zh-TW = "載入模型並啟動語音工作台"
+
+[[endpoints]]
+id = "webui"
+port_input = "port"
+path = "/"
+health = "/"
+kind = "http"
+[endpoints.label]
+en = "Qwen3-TTS WebUI"
+zh-CN = "Qwen3-TTS 语音工作台"
+zh-TW = "Qwen3-TTS 語音工作台"
