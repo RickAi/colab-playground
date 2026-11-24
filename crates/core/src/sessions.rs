@@ -101,11 +101,11 @@ impl Accelerator {
         matches!(self, Accelerator::TpuV5e1 | Accelerator::TpuV6e1)
     }
 
-    /// False for accelerators with a single machine shape (`--high-mem` is ignored).
+    /// False for accelerators with a single machine shape (`--high-mem` is ignored or rejected).
     pub fn supports_high_mem(self) -> bool {
         !matches!(
             self,
-            Accelerator::L4 | Accelerator::TpuV5e1 | Accelerator::TpuV6e1
+            Accelerator::L4 | Accelerator::G4 | Accelerator::TpuV5e1 | Accelerator::TpuV6e1
         )
     }
 }

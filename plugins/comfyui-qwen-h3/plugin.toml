@@ -18,7 +18,7 @@ zh-TW = "一鍵部署雲端 ComfyUI 節點工作流畫布，內建全套 Qwen-Im
 [provision]
 accelerator = "G4"
 min_vram_mib = 0
-high_mem = true
+high_mem = false
 
 [[inputs]]
 id = "preset"

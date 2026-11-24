@@ -1149,6 +1149,17 @@ impl LoginFlow for RealLoginFlow {
         st.accounts.upsert(account.clone())?;
         st.active = Some(account.id.clone());
         st.active_known = true;
+        drop(st);
+        if let Ok(layout) = self.inner.layout(&nc) {
+            let dir = layout.account_state(&account.id).parent();
+            let mut req = ScriptRequest::new("mkdir -p \"$1\"").arg(dir.as_str());
+            req.env = self.inner.cfg.base_env.clone();
+            let _ = self
+                .inner
+                .cfg
+                .host
+                .run_quiet(req.timeout(Duration::from_secs(30)), &nc);
+        }
         Ok(account)
     }
 
