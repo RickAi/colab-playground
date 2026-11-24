@@ -168,7 +168,7 @@ def main() -> None:
 
         demo_bin = shutil.which("qwen-tts-demo") or "qwen-tts-demo"
         server_log = RUN_DIR / "qwen3-tts.log"
-        cmd = [demo_bin, model_id, "--ip", "127.0.0.1", "--port", str(PORT)]
+        cmd = [demo_bin, model_id, "--ip", "127.0.0.1", "--port", str(PORT), "--no-flash-attn"]
         proc = subprocess.Popen(
             cmd,
             env=env,

@@ -259,42 +259,52 @@ def ensure_llama_engine() -> tuple[Path, str]:
         except Exception:
             pass
 
+    def _pick_cuda_assets(asset_list: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        wanted = [
+            a
+            for a in asset_list
+            if a["name"].endswith("-ubuntu-cuda-12.8-x64.tar.gz")
+            or a["name"].endswith("-ubuntu-cuda-12.4-x64.tar.gz")
+        ]
+        c128 = [a for a in wanted if "cuda-12.8" in a["name"]]
+        if c128:
+            return c128
+        if wanted:
+            return wanted
+        return [
+            a
+            for a in asset_list
+            if "ubuntu" in a["name"] and "cuda" in a["name"] and a["name"].endswith(".tar.gz")
+        ]
+
     tag = FALLBACK_LLAMA_TAG
-    assets: list[dict[str, Any]] = []
+    chosen: list[dict[str, Any]] = []
+    headers = {"Accept": "application/vnd.github+json", "User-Agent": "colab-playground"}
     try:
         r = requests.get(
-            "https://api.github.com/repos/ggml-org/llama.cpp/releases/latest",
-            headers={"Accept": "application/vnd.github+json", "User-Agent": "colab-playground"},
+            "https://api.github.com/repos/ggml-org/llama.cpp/releases?per_page=10",
+            headers=headers,
             timeout=15,
         )
         if r.ok:
-            rel = r.json()
-            tag = rel.get("tag_name") or tag
-            assets = rel.get("assets") or []
+            for rel in r.json():
+                cand = _pick_cuda_assets(rel.get("assets") or [])
+                if cand:
+                    tag = rel.get("tag_name") or tag
+                    chosen = cand
+                    break
     except Exception:
         pass
 
-    if not assets:
+    if not chosen:
+        tag = FALLBACK_LLAMA_TAG
         r = requests.get(
             f"https://api.github.com/repos/ggml-org/llama.cpp/releases/tags/{tag}",
-            headers={"Accept": "application/vnd.github+json", "User-Agent": "colab-playground"},
+            headers=headers,
             timeout=15,
         )
         r.raise_for_status()
-        assets = r.json().get("assets") or []
-
-    wanted = [
-        a
-        for a in assets
-        if a["name"].endswith("-ubuntu-cuda-12.8-x64.tar.gz")
-        or a["name"].endswith("-ubuntu-cuda-12.4-x64.tar.gz")
-    ]
-    # Prefer 12.8 if available, else 12.4
-    c128 = [a for a in wanted if "cuda-12.8" in a["name"]]
-    chosen = c128 if c128 else wanted
-    if not chosen:
-        # Fallback to any ubuntu-x64 cuda tar.gz
-        chosen = [a for a in assets if "ubuntu" in a["name"] and "cuda" in a["name"] and a["name"].endswith(".tar.gz")]
+        chosen = _pick_cuda_assets(r.json().get("assets") or [])
     if not chosen:
         raise RuntimeError(f"No prebuilt Ubuntu CUDA llama.cpp archive found in release {tag}")
 
