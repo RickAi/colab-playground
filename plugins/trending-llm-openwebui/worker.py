@@ -31,7 +31,7 @@ RUN_DIR = Path(E("PLUGIN_RUN_DIR", "/root/.colab-playground/runs/manual"))
 STATUS_FILE = Path(E("PLUGIN_STATUS_FILE", str(RUN_DIR / "status.json")))
 HEARTBEAT = E("PLUGIN_HEARTBEAT", "")
 
-PRESET = (E("PLUGIN_INPUT_PRESET", "Qwen3.8-27B") or "Qwen3.8-27B").strip()
+PRESET = (E("PLUGIN_INPUT_PRESET", "Qwen3.8-27B [L4]") or "Qwen3.8-27B [L4]").strip()
 CUSTOM_REPO = (E("PLUGIN_INPUT_CUSTOM_REPO", "") or "").strip()
 QUANT_PREF = (E("PLUGIN_INPUT_QUANT", "auto") or "auto").strip()
 CTX_SIZE = int(float(E("PLUGIN_INPUT_CTX_SIZE", "16384") or 16384))
@@ -42,12 +42,18 @@ LLAMA_PORT = int(float(E("PLUGIN_INPUT_API_PORT", "8000") or 8000))
 HF_TOKEN = (E("PLUGIN_HF_TOKEN", "") or "").strip()
 
 PRESET_REPOS: dict[str, str] = {
-    "Qwen3.8-27B": "unsloth/Qwen3.8-27B-GGUF",
-    "Gemma-4-26B-A4B-Multimodal": "unsloth/gemma-4-26B-A4B-it-GGUF",
-    "Gemma-4-31B-Multimodal": "unsloth/gemma-4-31B-it-GGUF",
-    "DeepSeek-V4.1-Flash": "unsloth/DeepSeek-V4.1-Flash-1017-GGUF",
-    "Qwen3-Coder-Next": "unsloth/Qwen3-Coder-Next-GGUF",
-    "GLM-4.7-Flash": "unsloth/GLM-4.7-Flash-GGUF",
+    "Qwen3.8-27B [L4]": "unsloth/Qwen3.8-27B-GGUF",
+    "Gemma-4-26B-A4B-Vision [L4]": "unsloth/gemma-4-26B-A4B-it-GGUF",
+    "GLM-4.7-Flash [L4]": "unsloth/GLM-4.7-Flash-GGUF",
+    "Gemma-4-31B-Vision [A100/G4]": "unsloth/gemma-4-31B-it-GGUF",
+    "Qwen3-Coder-Next [A100/G4]": "unsloth/Qwen3-Coder-Next-GGUF",
+    "DeepSeek-V4.1-Flash [G4 96GB]": "unsloth/DeepSeek-V4.1-Flash-1017-GGUF",
+    "GLM-5.3 [G4 96GB]": "unsloth/GLM-5.3-GGUF",
+    "Qwen3.5-122B-A10B [G4 96GB]": "unsloth/Qwen3.5-122B-A10B-GGUF",
+    "Qwen3-235B-A22B [G4 96GB]": "unsloth/Qwen3-235B-A22B-Instruct-2507-GGUF",
+    "MiniMax-M2.5 [G4 96GB]": "unsloth/MiniMax-M2.5-GGUF",
+    "Kimi-K2-Instruct [G4 96GB]": "unsloth/Kimi-K2-Instruct-GGUF",
+    "Qwen3-Coder-480B [G4 96GB]": "unsloth/Qwen3-Coder-480B-A35B-Instruct-GGUF",
 }
 
 MODELS_ROOT = Path("/content/trending-models")
@@ -523,7 +529,7 @@ def main() -> None:
     repo_id = CUSTOM_REPO if CUSTOM_REPO else PRESET_REPOS.get(PRESET, "")
     if not repo_id or "/" not in repo_id:
         fail("setup", f"Invalid model repository: {repo_id!r}")
-    alias = CUSTOM_REPO.split("/")[-1] if CUSTOM_REPO else PRESET
+    alias = CUSTOM_REPO.split("/")[-1] if CUSTOM_REPO else PRESET.split(" [", 1)[0].strip()
 
     setup_done = threading.Event()
     api_key_box: list[str] = []

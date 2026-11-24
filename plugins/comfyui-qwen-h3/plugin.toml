@@ -59,6 +59,18 @@ zh-CN = "与 Colab Studio 行为一致：qwen_h3 模式下节点与工作流就�
 zh-TW = "與 Colab Studio 行為一致：qwen_h3 模式下節點與工作流就緒後立即開放 ComfyUI 畫布，同時後台用 hf_transfer 拉取全部模型權重。"
 
 [[inputs]]
+id = "extra_loras"
+type = "text"
+[inputs.label]
+en = "Extra Hugging Face LoRAs (optional)"
+zh-CN = "额外加载 Hugging Face LoRA（可选）"
+zh-TW = "額外載入 Hugging Face LoRA（選填）"
+[inputs.help]
+en = "Comma-separated HF URLs or repo:path (e.g. https://huggingface.co/Sentinel7/h3/blob/main/2834417/3446189/README.md or owner/repo:dir). All .safetensors in each link/folder are downloaded into ComfyUI models/loras/."
+zh-CN = "支持粘贴单个或多个 Hugging Face 链接（英文逗号分隔），支持直接粘贴具体 .safetensors 文件、目录或 README.md 链接（如 https://huggingface.co/Sentinel7/h3/blob/main/2834417/3446189/README.md），自动下载该目录下全部 LoRA 到 ComfyUI 的 models/loras/。"
+zh-TW = "支援貼上單個或多個 Hugging Face 連結（英文逗號分隔），支援直接貼上 .safetensors 檔案、目錄或 README.md 連結，自動下載該目錄下全部 LoRA 至 ComfyUI 的 models/loras/。"
+
+[[inputs]]
 id = "cloudflare_tunnel"
 type = "bool"
 default = false

@@ -11,9 +11,9 @@ ja = "人気 LLM ワンクリック体験 (Open WebUI)"
 ko = "인기 LLM 원클릭 체험 (Open WebUI)"
 
 [description]
-en = "One-click Open WebUI + llama.cpp for the hottest open-source models: Qwen3.8-27B, Gemma 4 (26B-A4B / 31B Multimodal Vision), DeepSeek-V4.1-Flash, Qwen3-Coder-Next, and GLM-4.7-Flash. Auto-picks the best quantisation and mmproj for your GPU."
-zh-CN = "一键体验当前最火开源大模型 + Open WebUI 对话界面：内置 Qwen3.8-27B、Google Gemma 4 多模态看图对话（26B-A4B / 31B）、DeepSeek-V4.1-Flash、Qwen3-Coder-Next 与 GLM-4.7-Flash，根据显存自动选最佳量化版本并自动挂载视觉模块。"
-zh-TW = "一鍵體驗目前最熱門開源大模型 + Open WebUI 對話介面：內建 Qwen3.8-27B、Google Gemma 4 多模態看圖對話（26B-A4B / 31B）、DeepSeek-V4.1-Flash、Qwen3-Coder-Next 與 GLM-4.7-Flash，依顯存自動挑選最佳量化版本並自動掛載視覺模組。"
+en = "One-click Open WebUI + llama.cpp for the hottest 2026 open-source models, from L4 (24 GB) daily drivers (Qwen3.8-27B, Gemma 4 Multimodal, GLM-4.7-Flash) to G4 (96 GB) flagships (DeepSeek-V4.1-Flash, GLM-5.3, Qwen3.5-122B, Qwen3-235B, MiniMax-M2.5, Kimi-K2, Qwen3-Coder-480B)."
+zh-CN = "一键体验当前最火开源大模型 + Open WebUI：涵盖 L4 (24GB) 高性价比主力（Qwen3.8-27B、Gemma 4 多模态看图、GLM-4.7-Flash）与 G4 (96GB) 顶级旗舰（DeepSeek-V4.1-Flash、GLM-5.3、Qwen3.5-122B、Qwen3-235B、MiniMax-M2.5、Kimi-K2、Qwen3-Coder-480B），自动按显存挑选最佳量化。"
+zh-TW = "一鍵體驗目前最熱門開源大模型 + Open WebUI：涵蓋 L4 (24GB) 主力與 G4 (96GB) 頂級旗艦（DeepSeek-V4.1-Flash、GLM-5.3、Qwen3.5-122B、Qwen3-235B、MiniMax-M2.5、Kimi-K2、Qwen3-Coder-480B），自動依顯存挑選最佳量化。"
 
 [provision]
 accelerator = "L4"
@@ -24,22 +24,28 @@ high_mem = false
 id = "preset"
 type = "select"
 options = [
-  "Qwen3.8-27B",
-  "Gemma-4-26B-A4B-Multimodal",
-  "Gemma-4-31B-Multimodal",
-  "DeepSeek-V4.1-Flash",
-  "Qwen3-Coder-Next",
-  "GLM-4.7-Flash",
+  "Qwen3.8-27B [L4]",
+  "Gemma-4-26B-A4B-Vision [L4]",
+  "GLM-4.7-Flash [L4]",
+  "Gemma-4-31B-Vision [A100/G4]",
+  "Qwen3-Coder-Next [A100/G4]",
+  "DeepSeek-V4.1-Flash [G4 96GB]",
+  "GLM-5.3 [G4 96GB]",
+  "Qwen3.5-122B-A10B [G4 96GB]",
+  "Qwen3-235B-A22B [G4 96GB]",
+  "MiniMax-M2.5 [G4 96GB]",
+  "Kimi-K2-Instruct [G4 96GB]",
+  "Qwen3-Coder-480B [G4 96GB]",
 ]
-default = "Qwen3.8-27B"
+default = "Qwen3.8-27B [L4]"
 [inputs.label]
 en = "Model preset"
 zh-CN = "选择热门模型"
 zh-TW = "選擇熱門模型"
 [inputs.help]
-en = "L4 (24 GB) runs Qwen3.8-27B, Gemma-4-26B-A4B (vision) and GLM-4.7-Flash smoothly. A100/G4 is recommended for DeepSeek-V4.1-Flash, Qwen3-Coder-Next or Gemma-4-31B."
-zh-CN = "L4 (24GB, 1.54 CU/h) 即可流畅运行 Qwen3.8-27B、Gemma-4-26B-A4B（支持传图对话）与 GLM-4.7-Flash；DeepSeek-V4.1-Flash / Qwen3-Coder-Next / Gemma-4-31B 推荐选 A100 或 G4。"
-zh-TW = "L4 (24GB) 即可流暢運行 Qwen3.8-27B、Gemma-4-26B-A4B（支援看圖對話）與 GLM-4.7-Flash；DeepSeek-V4.1-Flash / Qwen3-Coder-Next / Gemma-4-31B 建議選 A100 或 G4。"
+en = "Tag shows recommended GPU: [L4] runs smoothly on 24 GB; [G4 96GB] models are huge MoE flagships that shine on NVIDIA G4 (96 GB)."
+zh-CN = "方括号标注推荐 GPU：[L4] 仅 1.54 CU/h 即可流畅跑；[G4 96GB] 为超大 MoE 旗舰模型，请在下方硬件处切换为 NVIDIA G4。"
+zh-TW = "方括號標註推薦 GPU：[L4] 即可流暢跑；[G4 96GB] 為超大 MoE 旗艦模型，請在下方硬體處切換為 NVIDIA G4。"
 
 [[inputs]]
 id = "custom_repo"

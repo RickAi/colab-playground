@@ -38,6 +38,7 @@ HEARTBEAT = E("PLUGIN_HEARTBEAT", "")
 PRESET = (E("PLUGIN_INPUT_PRESET", "qwen_h3") or "qwen_h3").strip()
 COMFY_PORT = int(float(E("PLUGIN_INPUT_PORT", "8188") or 8188))
 BG_MODEL_SYNC = E("PLUGIN_INPUT_BACKGROUND_MODEL_SYNC", "1") == "1"
+EXTRA_LORAS = (E("PLUGIN_INPUT_EXTRA_LORAS", "") or "").strip()
 ENABLE_CF_TUNNEL = E("PLUGIN_INPUT_CLOUDFLARE_TUNNEL", "0") == "1"
 HF_TOKEN = (E("PLUGIN_HF_TOKEN", "") or "").strip()
 
@@ -824,10 +825,96 @@ def _sync_qwen_h3_models(tpl_workflow: dict[str, Any], update_run_status: bool) 
         except Exception:
             pass
         log_step(f"All {total}/{total} Qwen-Image-2.1 BF16 + MiniMax H3 models are ready!")
+        if EXTRA_LORAS:
+            _sync_extra_loras(model_root / "loras")
         if update_run_status:
             write_status("running", "models", f"All {total}/{total} models synced", progress=1.0)
     finally:
         _sync_busy.clear()
+
+
+def _parse_hf_lora_spec(raw: str) -> Optional[tuple[str, str, str]]:
+    """Parse an HF URL or 'owner/repo:subpath' into (repo_id, revision, subpath)."""
+    item = raw.strip()
+    if not item:
+        return None
+    if item.startswith("http://") or item.startswith("https://"):
+        parsed = urlparse(item)
+        if parsed.netloc not in ("huggingface.co", "www.huggingface.co"):
+            return None
+        parts = [unquote(p) for p in parsed.path.strip("/").split("/") if p]
+        if len(parts) < 2:
+            return None
+        repo_id = f"{parts[0]}/{parts[1]}"
+        if len(parts) >= 4 and parts[2] in ("blob", "tree", "resolve", "raw"):
+            rev = parts[3]
+            subpath = "/".join(parts[4:])
+        else:
+            rev = "main"
+            subpath = ""
+        return repo_id, rev, subpath
+    if ":" in item:
+        repo_id, subpath = item.split(":", 1)
+        return repo_id.strip(), "main", subpath.strip().strip("/")
+    if "/" in item:
+        return item.strip("/"), "main", ""
+    return None
+
+
+def _sync_extra_loras(lora_dir: Path) -> list[str]:
+    """Download extra Hugging Face LoRA .safetensors files into ComfyUI loras dir."""
+    from huggingface_hub import HfApi
+    import requests
+
+    lora_dir.mkdir(parents=True, exist_ok=True)
+    installed: list[str] = []
+    api = HfApi(token=HF_TOKEN or None)
+
+    for raw in [s.strip() for s in EXTRA_LORAS.split(",") if s.strip()]:
+        parsed = _parse_hf_lora_spec(raw)
+        if not parsed:
+            log_step(f"Skipping unrecognized LoRA spec: {raw}")
+            continue
+        repo_id, rev, subpath = parsed
+        try:
+            if subpath.lower().endswith(".safetensors"):
+                targets = [subpath]
+            else:
+                # If pointing to a README.md or other non-safetensors file, use its parent folder.
+                folder = subpath.rsplit("/", 1)[0] if ("." in subpath.rsplit("/", 1)[-1] and "/" in subpath) else subpath
+                prefix = f"{folder.strip('/')}/" if folder.strip("/") else ""
+                info = api.model_info(repo_id, revision=rev, files_metadata=False)
+                targets = [
+                    s.rfilename
+                    for s in info.siblings
+                    if s.rfilename.lower().endswith(".safetensors")
+                    and (not prefix or s.rfilename.startswith(prefix))
+                ]
+            if not targets:
+                log_step(f"No .safetensors LoRA files found for {raw}")
+                continue
+            for rf in targets:
+                fname = os.path.basename(rf)
+                dest = lora_dir / fname
+                if dest.is_file() and dest.stat().st_size > 0:
+                    log_step(f"Extra LoRA already present: {fname}")
+                    installed.append(fname)
+                    continue
+                log_step(f"Downloading extra LoRA {repo_id}/{rf} -> {dest}...")
+                downloaded = _hf_download_fast(repo_id=repo_id, filename=rf, revision=rev, local_dir=str(lora_dir))
+                if downloaded != dest:
+                    downloaded.replace(dest)
+                installed.append(fname)
+        except Exception as exc:
+            log_step(f"Warning: failed to download extra LoRA {raw}: {exc}")
+
+    if installed:
+        try:
+            requests.get(f"http://127.0.0.1:{COMFY_PORT}/object_info", timeout=10)
+        except Exception:
+            pass
+        log_step(f"Installed {len(installed)} extra LoRA(s): {', '.join(installed)}")
+    return installed
 
 
 def _start_cloudflare_tunnel() -> Optional[str]:
@@ -1002,6 +1089,8 @@ def main() -> None:
                 bg_thread.start()
             else:
                 _sync_qwen_h3_models(tpl_workflow, update_run_status=True)
+        elif EXTRA_LORAS:
+            _sync_extra_loras(COMFY_DIR / "models" / "loras")
 
         gpu = query_gpu_summary()
         outputs: dict[str, Any] = {
