@@ -346,32 +346,42 @@ mod tests {
     }
 }
 
-gpui::actions!(colab_playground, [Quit]);
+gpui::actions!(colab_playground, [Hide, HideOthers, UnhideAll, Quit]);
 
-/// The app menu: the app's name with Quit. Built on every OS (so tests check it), installed
-/// only on macOS by [`install_quit`].
+/// The app menu: Hide, Hide Others, Show All, and Quit. Built on every OS (so tests check it),
+/// installed only on macOS by [`install_quit`].
 pub fn app_menus(cx: &App) -> Vec<gpui::Menu> {
     vec![gpui::Menu {
         name: crate::i18n::tr(cx, crate::i18n::keys::APP_NAME),
-        items: vec![gpui::MenuItem::action(
-            crate::i18n::tr(cx, crate::i18n::keys::MENU_QUIT),
-            Quit,
-        )],
+        items: vec![
+            gpui::MenuItem::action("Hide Colab Playground", Hide),
+            gpui::MenuItem::action("Hide Others", HideOthers),
+            gpui::MenuItem::action("Show All", UnhideAll),
+            gpui::MenuItem::separator(),
+            gpui::MenuItem::action(crate::i18n::tr(cx, crate::i18n::keys::MENU_QUIT), Quit),
+        ],
         disabled: false,
     }]
 }
 
-/// Cmd+Q for [`Quit`] (installed on macOS only; built everywhere so tests check it).
+/// Cmd+H / Cmd+Option+H / Cmd+Q bindings (installed on macOS only; built everywhere so tests check it).
 pub fn quit_bindings() -> Vec<gpui::KeyBinding> {
-    vec![gpui::KeyBinding::new("cmd-q", Quit, None)]
+    vec![
+        gpui::KeyBinding::new("cmd-h", Hide, None),
+        gpui::KeyBinding::new("cmd-alt-h", HideOthers, None),
+        gpui::KeyBinding::new("cmd-q", Quit, None),
+    ]
 }
 
-/// macOS has no Cmd+Q without an app menu (gpui builds the menu bar only from `set_menus`),
-/// so bind it and install the minimal menu there. Windows and Linux quit by closing the
+/// macOS has no Cmd+H / Cmd+Q without an app menu (gpui builds the menu bar only from `set_menus`),
+/// so bind them and install the menu there. Windows and Linux quit by closing the
 /// window, which the close check already covers.
 pub fn install_quit(cx: &mut App) {
     #[cfg(target_os = "macos")]
     {
+        cx.on_action(|_: &Hide, cx| cx.hide());
+        cx.on_action(|_: &HideOthers, cx| cx.hide_other_apps());
+        cx.on_action(|_: &UnhideAll, cx| cx.unhide_other_apps());
         cx.bind_keys(quit_bindings());
         let menus = app_menus(cx);
         cx.set_menus(menus);

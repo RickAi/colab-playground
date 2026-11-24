@@ -4,9 +4,6 @@ use gpui::{
     App, AppContext, Bounds, Entity, TitlebarOptions, WindowBounds, WindowHandle, WindowOptions,
 };
 
-#[cfg(target_os = "macos")]
-gpui::actions!(colab_playground, [Hide, HideOthers, UnhideAll, Quit]);
-
 use crate::{
     i18n::{keys, tr},
     platform,
@@ -16,34 +13,6 @@ use crate::{
         root::RootView,
     },
 };
-
-#[cfg(target_os = "macos")]
-fn init_macos_menu(state: Entity<AppState>, cx: &mut App) {
-    use gpui::{KeyBinding, Menu, MenuItem};
-
-    cx.on_action(|_: &Hide, cx| cx.hide());
-    cx.on_action(|_: &HideOthers, cx| cx.hide_other_apps());
-    cx.on_action(|_: &UnhideAll, cx| cx.unhide_other_apps());
-    cx.on_action(move |_: &Quit, cx| {
-        state.update(cx, |s, cx| s.request_quit(cx));
-    });
-    cx.bind_keys([
-        KeyBinding::new("cmd-h", Hide, None),
-        KeyBinding::new("cmd-alt-h", HideOthers, None),
-        KeyBinding::new("cmd-q", Quit, None),
-    ]);
-    cx.set_menus(vec![Menu {
-        name: "Colab Playground".into(),
-        items: vec![
-            MenuItem::action("Hide Colab Playground", Hide),
-            MenuItem::action("Hide Others", HideOthers),
-            MenuItem::action("Show All", UnhideAll),
-            MenuItem::separator(),
-            MenuItem::action("Quit Colab Playground", Quit),
-        ],
-        disabled: false,
-    }]);
-}
 
 /// Runs the app until its last window closes.
 pub fn run(options: StateOptions) {
@@ -56,8 +25,6 @@ pub fn run(options: StateOptions) {
                 return;
             }
             let state = AppState::init(options, cx);
-            #[cfg(target_os = "macos")]
-            init_macos_menu(state.clone(), cx);
             if let Err(error) = open_main_window(state, cx) {
                 log::error!("app: {error:#}");
                 cx.quit();
