@@ -1211,9 +1211,8 @@ script = "main.py"
             .get("qwen38-openwebui")
             .expect("qwen38-openwebui bundled");
         assert_eq!(ow.source, PluginSource::Bundled);
-        assert_eq!(ow.manifest.endpoints.len(), 2);
+        assert_eq!(ow.manifest.endpoints.len(), 1);
         assert_eq!(ow.manifest.endpoints[0].id, "webui");
-        assert_eq!(ow.manifest.endpoints[1].id, "api");
         assert!(!ow.script.is_empty());
 
         let comfy = store
@@ -1228,7 +1227,7 @@ script = "main.py"
             .get("trending-llm-openwebui")
             .expect("trending-llm-openwebui bundled");
         assert_eq!(trending.source, PluginSource::Bundled);
-        assert_eq!(trending.manifest.endpoints.len(), 2);
+        assert_eq!(trending.manifest.endpoints.len(), 1);
         assert!(!trending.script.is_empty());
 
         let tts = store

@@ -168,14 +168,3 @@ kind = "http"
 en = "Open WebUI Chat"
 zh-CN = "Open WebUI 对话界面"
 zh-TW = "Open WebUI 對話介面"
-
-[[endpoints]]
-id = "api"
-port_input = "api_port"
-path = "/v1"
-health = "/health"
-kind = "openai"
-[endpoints.label]
-en = "OpenAI-compatible API"
-zh-CN = "OpenAI 兼容 API"
-zh-TW = "OpenAI 相容 API"
