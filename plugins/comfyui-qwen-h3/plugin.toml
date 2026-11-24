@@ -61,10 +61,11 @@ zh-TW = "與 Colab Studio 行為一致：qwen_h3 模式下節點與工作流就�
 [[inputs]]
 id = "extra_loras"
 type = "text"
+default = "https://huggingface.co/Sentinel7/h3/blob/main/2834417/3446189/README.md"
 [inputs.label]
 en = "Extra Hugging Face LoRAs (optional)"
-zh-CN = "额外加载 Hugging Face LoRA（可选）"
-zh-TW = "額外載入 Hugging Face LoRA（選填）"
+zh-CN = "自动加载 Hugging Face LoRA（可多选逗号分隔）"
+zh-TW = "自動載入 Hugging Face LoRA（可多選逗號分隔）"
 [inputs.help]
 en = "Comma-separated HF URLs or repo:path (e.g. https://huggingface.co/Sentinel7/h3/blob/main/2834417/3446189/README.md or owner/repo:dir). All .safetensors in each link/folder are downloaded into ComfyUI models/loras/."
 zh-CN = "支持粘贴单个或多个 Hugging Face 链接（英文逗号分隔），支持直接粘贴具体 .safetensors 文件、目录或 README.md 链接（如 https://huggingface.co/Sentinel7/h3/blob/main/2834417/3446189/README.md），自动下载该目录下全部 LoRA 到 ComfyUI 的 models/loras/。"
