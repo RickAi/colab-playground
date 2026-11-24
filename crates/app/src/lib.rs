@@ -31,4 +31,6 @@ pub mod platform;
 pub mod route;
 pub mod settings;
 pub mod state;
+#[cfg(target_os = "macos")]
+pub mod status_bar;
 pub mod ui;

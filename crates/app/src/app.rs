@@ -30,6 +30,8 @@ pub fn run(options: StateOptions) {
                 cx.quit();
                 return;
             }
+            #[cfg(target_os = "macos")]
+            crate::status_bar::install();
             cx.on_window_closed(|cx, _| {
                 if cx.windows().is_empty() {
                     cx.quit();
