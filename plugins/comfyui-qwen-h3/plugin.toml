@@ -1,0 +1,114 @@
+api = 1
+id = "comfyui-qwen-h3"
+version = "0.1.0"
+needs = ["hf_token"]
+
+[name]
+en = "ComfyUI Canvas (Qwen-Image-2.1 + MiniMax H3)"
+zh-CN = "ComfyUI 画布 · Qwen-Image-2.1 + MiniMax H3"
+zh-TW = "ComfyUI 畫布 · Qwen-Image-2.1 + MiniMax H3"
+ja = "ComfyUI キャンバス (Qwen-Image-2.1 + MiniMax H3)"
+ko = "ComfyUI 캔버스 (Qwen-Image-2.1 + MiniMax H3)"
+
+[description]
+en = "One-click ComfyUI on Colab with the full Qwen-Image-2.1 BF16 + MiniMax H3 + AI Pose Gallery + 9 preloaded workflows (auto-loaded on canvas), or lightweight SDXL-Turbo."
+zh-CN = "一键部署云端 ComfyUI 节点工作流画布，内置全套 Qwen-Image-2.1 BF16 + MiniMax H3 + AI 姿势画廊 + 9 套预置工作流（打开自动加载主工作流），也支持轻量级 SDXL-Turbo 模式。"
+zh-TW = "一鍵部署雲端 ComfyUI 節點工作流畫布，內建全套 Qwen-Image-2.1 BF16 + MiniMax H3 + AI 姿勢畫廊 + 9 套預置工作流（開啟自動載入主工作流），也支援輕量級 SDXL-Turbo 模式。"
+
+[provision]
+accelerator = "G4"
+min_vram_mib = 0
+high_mem = true
+
+[[inputs]]
+id = "preset"
+type = "select"
+options = ["qwen_h3", "sdxl_lite"]
+default = "qwen_h3"
+[inputs.label]
+en = "Workflow preset"
+zh-CN = "预置工作流套装"
+zh-TW = "預置工作流套裝"
+[inputs.help]
+en = "qwen_h3 installs Qwen-Image-2.1 BF16 + MiniMax H3 + AI Pose Gallery + 9 workflows (recommended on G4 / A100 High-RAM). sdxl_lite installs a lightweight SDXL-Turbo FP16 checkpoint (~6.9 GB)."
+zh-CN = "qwen_h3：全套 Qwen-Image-2.1 BF16 + MiniMax H3 + AI 姿势画廊 + 9 套工作流（推荐 G4 / A100 高内存）；sdxl_lite：轻量 SDXL-Turbo FP16（约 6.9 GB）。"
+zh-TW = "qwen_h3：全套 Qwen-Image-2.1 BF16 + MiniMax H3 + AI 姿勢畫廊 + 9 套工作流（推薦 G4 / A100 高記憶體）；sdxl_lite：輕量 SDXL-Turbo FP16（約 6.9 GB）。"
+
+[[inputs]]
+id = "port"
+type = "number"
+default = 8188
+min = 1024
+max = 65535
+[inputs.label]
+en = "ComfyUI port on the VM"
+zh-CN = "VM 上的 ComfyUI 端口"
+zh-TW = "VM 上的 ComfyUI 連接埠"
+
+[[inputs]]
+id = "background_model_sync"
+type = "bool"
+default = true
+[inputs.label]
+en = "Open WebUI first and sync models in background"
+zh-CN = "先启动画布，后台高速同步模型权重"
+zh-TW = "先啟動畫布，後台高速同步模型權重"
+[inputs.help]
+en = "Matches Colab Studio: for qwen_h3, opens ComfyUI as soon as nodes & workflows are ready while downloading BF16 weights in the background."
+zh-CN = "与 Colab Studio 行为一致：qwen_h3 模式下节点与工作流就绪后立即开放 ComfyUI 画布，同时后台用 hf_transfer 拉取全部模型权重。"
+zh-TW = "與 Colab Studio 行為一致：qwen_h3 模式下節點與工作流就緒後立即開放 ComfyUI 畫布，同時後台用 hf_transfer 拉取全部模型權重。"
+
+[[inputs]]
+id = "cloudflare_tunnel"
+type = "bool"
+default = false
+[inputs.label]
+en = "Also open a Cloudflare public URL"
+zh-CN = "同时开启 Cloudflare 公网临时链接"
+zh-TW = "同時開啟 Cloudflare 公網臨時連結"
+[inputs.help]
+en = "Colab Playground already forwards ComfyUI to 127.0.0.1 locally via SSH. Enable this only if you also want a trycloudflare.com URL."
+zh-CN = "Colab Playground 会自动通过 SSH 将 ComfyUI 转发到本地 127.0.0.1；仅当需要公网 trycloudflare.com 链接时开启。"
+zh-TW = "Colab Playground 會自動透過 SSH 將 ComfyUI 轉發到本機 127.0.0.1；僅當需要公網 trycloudflare.com 連結時開啟。"
+
+[run]
+script = "worker.py"
+
+[[stages]]
+id = "install"
+[stages.label]
+en = "Install ComfyUI & dependencies"
+zh-CN = "安装 ComfyUI 与依赖"
+zh-TW = "安裝 ComfyUI 與相依套件"
+
+[[stages]]
+id = "workspace"
+[stages.label]
+en = "Install custom nodes & workflows"
+zh-CN = "安装自定义节点与 9 套工作流"
+zh-TW = "安裝自訂節點與 9 套工作流"
+
+[[stages]]
+id = "server"
+[stages.label]
+en = "Start ComfyUI & verify nodes"
+zh-CN = "启动 ComfyUI 并校验节点"
+zh-TW = "啟動 ComfyUI 並校驗節點"
+
+[[stages]]
+id = "models"
+[stages.label]
+en = "Sync model weights"
+zh-CN = "同步模型权重"
+zh-TW = "同步模型權重"
+
+[[endpoints]]
+id = "webui"
+port_input = "port"
+path = "/"
+health = "/system_stats"
+kind = "http"
+[endpoints.label]
+en = "ComfyUI Canvas"
+zh-CN = "ComfyUI 节点画布"
+zh-TW = "ComfyUI 節點畫布"

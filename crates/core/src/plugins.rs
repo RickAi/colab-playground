@@ -713,10 +713,20 @@ pub struct PluginPreview {
 
 /// Bundled plugins: (manifest, script bytes).
 pub fn bundled() -> Vec<(&'static str, &'static [u8])> {
-    vec![(
-        include_str!("../../../plugins/llama-cpp/plugin.toml"),
-        include_bytes!("../../../plugins/llama-cpp/worker.py"),
-    )]
+    vec![
+        (
+            include_str!("../../../plugins/llama-cpp/plugin.toml"),
+            include_bytes!("../../../plugins/llama-cpp/worker.py"),
+        ),
+        (
+            include_str!("../../../plugins/qwen38-openwebui/plugin.toml"),
+            include_bytes!("../../../plugins/qwen38-openwebui/worker.py"),
+        ),
+        (
+            include_str!("../../../plugins/comfyui-qwen-h3/plugin.toml"),
+            include_bytes!("../../../plugins/comfyui-qwen-h3/worker.py"),
+        ),
+    ]
 }
 
 /// Reads and validates a plugin directory (no symlinked or oversized files,
@@ -1183,6 +1193,28 @@ script = "main.py"
         }
         let ep = &p.manifest.endpoints[0];
         assert_eq!(ep.port_input.as_deref(), Some("port"));
+    }
+
+    #[test]
+    fn bundled_studio_plugins_are_valid() {
+        let store = PluginStore::load(None, None).unwrap();
+
+        let ow = store
+            .get("qwen38-openwebui")
+            .expect("qwen38-openwebui bundled");
+        assert_eq!(ow.source, PluginSource::Bundled);
+        assert_eq!(ow.manifest.endpoints.len(), 2);
+        assert_eq!(ow.manifest.endpoints[0].id, "webui");
+        assert_eq!(ow.manifest.endpoints[1].id, "api");
+        assert!(!ow.script.is_empty());
+
+        let comfy = store
+            .get("comfyui-qwen-h3")
+            .expect("comfyui-qwen-h3 bundled");
+        assert_eq!(comfy.source, PluginSource::Bundled);
+        assert_eq!(comfy.manifest.endpoints.len(), 1);
+        assert_eq!(comfy.manifest.endpoints[0].id, "webui");
+        assert!(!comfy.script.is_empty());
     }
 
     #[test]

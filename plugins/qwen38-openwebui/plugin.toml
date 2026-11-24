@@ -1,0 +1,162 @@
+api = 1
+id = "qwen38-openwebui"
+version = "0.1.0"
+needs = ["hf_token"]
+
+[name]
+en = "Qwen3.8 Chat (Open WebUI)"
+zh-CN = "Qwen3.8 对话 · Open WebUI"
+zh-TW = "Qwen3.8 對話 · Open WebUI"
+ja = "Qwen3.8 チャット (Open WebUI)"
+ko = "Qwen3.8 채팅 (Open WebUI)"
+
+[description]
+en = "Deploy the 84 GB flagship Qwen3.8-Flash-Next (IQ3_S) GGUF model with llama.cpp b12110 and password-protected Open WebUI 0.12.3. Recommended on G4 (RTX PRO 6000 96 GB) with High-RAM."
+zh-CN = "一键部署 84GB 旗舰模型 Qwen3.8-Flash-Next (IQ3_S) + llama.cpp b12110 + 带登录保护的 Open WebUI 0.12.3，同时提供网页对话界面与 OpenAI 兼容 API（推荐使用 G4 · 96GB GPU + 高内存）。"
+zh-TW = "一鍵部署 84GB 旗艦模型 Qwen3.8-Flash-Next (IQ3_S) + llama.cpp b12110 + 密碼保護的 Open WebUI 0.12.3，同時提供網頁對話介面與 OpenAI 相容 API（建議使用 G4 · 96GB GPU + 高記憶體）。"
+
+[provision]
+accelerator = "G4"
+min_vram_mib = 0
+high_mem = true
+
+[[inputs]]
+id = "admin_email"
+type = "text"
+default = "rick@example.com"
+[inputs.label]
+en = "Open WebUI login email"
+zh-CN = "Open WebUI 登录邮箱"
+zh-TW = "Open WebUI 登入信箱"
+[inputs.help]
+en = "Admin email used to sign in to Open WebUI (signup is disabled)."
+zh-CN = "用于登录 Open WebUI 的管理员邮箱（已关闭公开注册）。"
+zh-TW = "用於登入 Open WebUI 的管理員信箱（已關閉公開註冊）。"
+
+[[inputs]]
+id = "admin_password"
+type = "secret"
+[inputs.label]
+en = "Open WebUI password (optional)"
+zh-CN = "Open WebUI 登录密码（可选）"
+zh-TW = "Open WebUI 登入密碼（選填）"
+[inputs.help]
+en = "Leave empty to auto-generate a strong password (shown in run outputs)."
+zh-CN = "留空将自动生成高强度随机密码（启动后显示在运行输出中）。"
+zh-TW = "留空將自動產生高強度隨機密碼（啟動後顯示在執行輸出中）。"
+
+[[inputs]]
+id = "ctx_size"
+type = "number"
+default = 32768
+min = 4096
+max = 131072
+[inputs.label]
+en = "Context length"
+zh-CN = "上下文长度"
+zh-TW = "上下文長度"
+
+[[inputs]]
+id = "webui_port"
+type = "number"
+default = 8081
+min = 1024
+max = 65535
+[inputs.label]
+en = "Open WebUI port on the VM"
+zh-CN = "VM 上的 Open WebUI 端口"
+zh-TW = "VM 上的 Open WebUI 連接埠"
+[inputs.help]
+en = "Port 8080 is reserved by Colab; default 8081."
+zh-CN = "端口 8080 为 Colab 保留，默认使用 8081。"
+zh-TW = "連接埠 8080 為 Colab 保留，預設使用 8081。"
+
+[[inputs]]
+id = "api_port"
+type = "number"
+default = 8000
+min = 1024
+max = 65535
+[inputs.label]
+en = "llama.cpp API port on the VM"
+zh-CN = "VM 上的 llama.cpp API 端口"
+zh-TW = "VM 上的 llama.cpp API 連接埠"
+
+[[inputs]]
+id = "skip_acceptance"
+type = "bool"
+default = false
+[inputs.label]
+en = "Skip multi-turn warmup check"
+zh-CN = "跳过多轮 SSE 预热验收"
+zh-TW = "略過多輪 SSE 預熱驗收"
+[inputs.help]
+en = "When off, runs a quick multi-turn streaming test to pre-warm GPU VRAM and verify Open WebUI login."
+zh-CN = "关闭时会在就绪前自动执行多轮流式推理预热 GPU 显存并校验 Open WebUI 登录。"
+zh-TW = "關閉時會在就緒前自動執行多輪串流推理預熱 GPU 顯存並校驗 Open WebUI 登入。"
+
+[[inputs]]
+id = "cloudflare_tunnel"
+type = "bool"
+default = false
+[inputs.label]
+en = "Also open a Cloudflare public URL"
+zh-CN = "同时开启 Cloudflare 公网临时链接"
+zh-TW = "同時開啟 Cloudflare 公網臨時連結"
+[inputs.help]
+en = "Colab Playground already forwards Open WebUI to 127.0.0.1 locally via SSH. Enable this only if you also want a trycloudflare.com URL."
+zh-CN = "Colab Playground 会自动通过 SSH 将 Open WebUI 转发到本地 127.0.0.1；仅当需要公网 trycloudflare.com 链接时开启。"
+zh-TW = "Colab Playground 會自動透過 SSH 將 Open WebUI 轉發到本機 127.0.0.1；僅當需要公網 trycloudflare.com 連結時開啟。"
+
+[run]
+script = "worker.py"
+
+[[stages]]
+id = "setup"
+[stages.label]
+en = "Install llama.cpp & Open WebUI"
+zh-CN = "安装 llama.cpp 与 Open WebUI"
+zh-TW = "安裝 llama.cpp 與 Open WebUI"
+
+[[stages]]
+id = "download"
+[stages.label]
+en = "Download Qwen3.8 IQ3_S (~84 GB)"
+zh-CN = "下载 Qwen3.8 IQ3_S 模型（~84 GB）"
+zh-TW = "下載 Qwen3.8 IQ3_S 模型（~84 GB）"
+
+[[stages]]
+id = "server"
+[stages.label]
+en = "Start llama-server & Open WebUI"
+zh-CN = "启动 llama-server 与 Open WebUI"
+zh-TW = "啟動 llama-server 與 Open WebUI"
+
+[[stages]]
+id = "verify"
+[stages.label]
+en = "Verify & warm up GPU"
+zh-CN = "预热显存并验收服务"
+zh-TW = "預熱顯存並驗收服務"
+
+[[endpoints]]
+id = "webui"
+port_input = "webui_port"
+path = "/"
+health = "/health"
+kind = "http"
+[endpoints.label]
+en = "Open WebUI Chat"
+zh-CN = "Open WebUI 对话界面"
+zh-TW = "Open WebUI 對話介面"
+
+[[endpoints]]
+id = "api"
+port_input = "api_port"
+path = "/v1"
+health = "/health"
+kind = "openai"
+[endpoints.label]
+en = "llama.cpp OpenAI API"
+zh-CN = "llama.cpp OpenAI 兼容 API"
+zh-TW = "llama.cpp OpenAI 相容 API"
