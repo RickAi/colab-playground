@@ -986,10 +986,38 @@ impl ProvisionOps for RealOps<'_> {
             .new_session(&self.state, name, accelerator, high_mem, cancel)
     }
     fn probe(&self, name: &str, cancel: &CancelToken) -> Result<Hardware> {
-        let v = self
-            .cli
-            .exec_json(&self.state, name, &[], vm::PROBE_HARDWARE, 120, cancel)?;
-        Ok(vm::parse_hardware(&v))
+        // Fresh Colab runtimes sometimes accept the first WebSocket while the kernel is still
+        // `starting`, causing `colab-cli`'s kernel client to hang until our outer timeout kills it.
+        // Retry with a short per-attempt timeout so we recover cleanly on the same GPU runtime.
+        let mut last_err = None;
+        for attempt in 0..3 {
+            match self
+                .cli
+                .exec_json(&self.state, name, &[], vm::PROBE_HARDWARE, 30, cancel)
+            {
+                Ok(v) => return Ok(vm::parse_hardware(&v)),
+                Err(e)
+                    if attempt < 2
+                        && matches!(
+                            e.kind,
+                            ErrorKind::ExecTimeout | ErrorKind::ConnectionLost | ErrorKind::Parse
+                        ) =>
+                {
+                    last_err = Some(e);
+                    if self
+                        .inner
+                        .cfg
+                        .clock
+                        .sleep(Duration::from_secs(3), cancel)
+                        .is_err()
+                    {
+                        return Err(Error::cancelled());
+                    }
+                }
+                Err(e) => return Err(e),
+            }
+        }
+        Err(last_err.unwrap_or_else(|| Error::new(ErrorKind::ExecTimeout)))
     }
     fn stop(&self, name: &str, cancel: &CancelToken) -> Result<StopOutcome> {
         self.cli.stop(&self.state, name, cancel)
@@ -2390,7 +2418,7 @@ impl RealBackend {
                     if matches!(
                         e.kind,
                         ErrorKind::ConnectionLost | ErrorKind::ExecTimeout | ErrorKind::Parse
-                    ) && transient < 5 =>
+                    ) && transient < 10 =>
                 {
                     transient += 1;
                     catching_up = 0;

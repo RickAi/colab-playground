@@ -563,6 +563,31 @@ def main() -> None:
                 f"Selected {plan['quant']} ({plan['total_size']/1e9:.2f} GB)"
                 + (f" + vision mmproj {plan['mmproj_file']}" if plan["mmproj_file"] else "")
             )
+            # Pre-flight disk & VRAM check so giant [G4 96GB] models fail fast on L4/T4 instead
+            # of filling the disk and dropping the VM connection.
+            MODELS_ROOT.mkdir(parents=True, exist_ok=True)
+            safe_dir = MODELS_ROOT / repo_id.replace("/", "__")
+            already_bytes = sum(
+                (safe_dir / rf).stat().st_size
+                for rf in plan["files"]
+                if (safe_dir / rf).is_file()
+            )
+            needed_bytes = max(0, plan["total_size"] - already_bytes)
+            free_bytes = shutil.disk_usage(str(MODELS_ROOT)).free
+            if free_bytes < needed_bytes + 4 * (1024 ** 3):
+                fail(
+                    "plan",
+                    f"磁盘空间不足：模型 {alias} ({plan['quant']}) 还需 {needed_bytes/1e9:.1f} GB，"
+                    f"但当前实例剩余磁盘仅 {free_bytes/1e9:.1f} GB（当前 GPU: {gpu['name']}）。"
+                    f"请切换为 NVIDIA G4 或新建干净会话后重试。",
+                )
+            if gpu["available"] and plan["total_size"] > gpu["vram_total_mb"] * 1024 * 1024 * 1.15:
+                fail(
+                    "plan",
+                    f"显存不足：{alias} 最小量化 ({plan['quant']}) 需 {plan['total_size']/1e9:.1f} GB，"
+                    f"但当前 {gpu['name']} 仅 {gpu['vram_total_mb']/1024:.1f} GB 显存。"
+                    f"请在硬件下拉框中切换为 NVIDIA G4 (96GB) 后重试。",
+                )
             stage = "download"
             write_status(
                 "running",

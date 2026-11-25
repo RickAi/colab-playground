@@ -428,7 +428,10 @@ impl Cli {
             timeout_secs,
         };
         let stdin = StdinMode::Bytes(format!("{EXEC_PREAMBLE}{code}").into_bytes());
-        let overall = Duration::from_secs(u64::from(timeout_secs.max(30)) * 4 + 120);
+        // Bound the outer wall-clock tightly so a hung jupyter_kernel_client WebSocket
+        // (which can ignore `--timeout` when connecting to a `starting` kernel) is
+        // force-killed promptly instead of stalling for 10 minutes.
+        let overall = Duration::from_secs(u64::from(timeout_secs.max(15)) + 25);
         let out = self.run(Some(state), &cmd, stdin, Some(overall), cancel, &mut |_| {})?;
         // CLI-level failures (lost session, dropped connection, idle timeout)
         // exit non-zero; exceptions raised by `code` itself exit 0, so their
